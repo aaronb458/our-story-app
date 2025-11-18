@@ -6,7 +6,41 @@ const QUESTIONS = [
   "What's something I do that makes you feel truly loved?",
   "If you could relive one memory with me, which would it be?",
   "What's a way I could support you better when you're overwhelmed?",
+  "What's your favorite thing about our relationship?",
+  "What's a small thing I do that makes your day better?",
+  "What's one of your favorite memories of us laughing together?",
+  "What do you think our life will look like in 5 years?",
+  "What's something new you'd like us to try together?",
+  "What song reminds you of us and why?",
+  "What's your favorite way I show you I care?",
+  "What's something you're grateful for about us today?",
+  "If we could go anywhere together right now, where would it be?",
+  "What's one thing you love about how we communicate?",
+  "What's a challenge we've overcome together that you're proud of?",
+  "What's your favorite tradition we've created together?",
+  "What makes you feel most connected to me?",
+  "What's something about me that always makes you smile?",
+  "What's a dream you have for our future?",
+  "What's one way our relationship has helped you grow?",
+  "What's your favorite way we spend quality time together?",
+  "What's something I've done recently that meant a lot to you?",
+  "What do you think is our biggest strength as a couple?",
+  "What's a goal you'd like us to work on together?",
+  "What's your favorite inside joke we share?",
+  "What do you appreciate most about how I support your dreams?",
+  "What's a moment when you felt especially close to me?",
+  "What's something you'd like to learn or experience with me?",
+  "What quality of mine do you admire most?",
+  "What's your favorite thing about coming home to me?",
+  "What makes you feel most appreciated in our relationship?",
+  "What's a lesson our relationship has taught you?",
+  "What's something simple that always reminds you of me?",
+  "What's your favorite way we've celebrated something together?",
+  "What's one thing you never want to change about us?",
+  "What makes our relationship special to you?",
 ]
+
+const WEEKLY_REFLECTION = "What made you smile this week when you thought of us?"
 
 // Simple password check
 const CREDENTIALS = {
@@ -22,13 +56,20 @@ export default function Home() {
   const [answer, setAnswer] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [showPartnerModal, setShowPartnerModal] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [showLoveNote, setShowLoveNote] = useState(false)
+  const [loveNote, setLoveNote] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
 
   // Get question of the day (cycles through questions)
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
-  const questionIndex = dayOfYear % QUESTIONS.length
-  const question = QUESTIONS[questionIndex]
   const today = new Date().toISOString().split('T')[0]
+  const dayOfWeek = new Date().getDay() // 0 = Sunday
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+
+  // Use weekly reflection on Sundays, otherwise cycle through questions
+  const isWeeklyReflection = dayOfWeek === 0
+  const questionIndex = dayOfYear % QUESTIONS.length
+  const question = isWeeklyReflection ? WEEKLY_REFLECTION : QUESTIONS[questionIndex]
 
   // Update time every minute for countdown
   useEffect(() => {
@@ -49,8 +90,67 @@ export default function Home() {
         setAnswer(savedAnswer)
         setSubmitted(true)
       }
+
+      // Check for love note
+      const note = localStorage.getItem(`loveNote_${savedUser}_${today}`)
+      if (note && !localStorage.getItem(`loveNote_${savedUser}_${today}_read`)) {
+        setShowLoveNote(true)
+      }
     }
   }, [today])
+
+  // Calculate streak
+  const calculateStreak = () => {
+    if (!user) return 0
+    let streak = 0
+    let checkDate = new Date()
+
+    while (streak < 365) { // Max 1 year check
+      const dateStr = checkDate.toISOString().split('T')[0]
+      const hubbyAnswer = localStorage.getItem(`answer_hubby_${dateStr}`)
+      const wifeyAnswer = localStorage.getItem(`answer_wifey_${dateStr}`)
+
+      // Both must have answered for the day to count
+      if (hubbyAnswer && wifeyAnswer) {
+        streak++
+        checkDate.setDate(checkDate.getDate() - 1)
+      } else {
+        break
+      }
+    }
+
+    return streak
+  }
+
+  // Get history of past Q&A pairs
+  const getHistory = () => {
+    const history: Array<{ date: string; question: string; hubbyAnswer: string; wifeyAnswer: string }> = []
+    let checkDate = new Date()
+    checkDate.setDate(checkDate.getDate() - 1) // Start from yesterday
+
+    for (let i = 0; i < 30; i++) { // Look back 30 days
+      const dateStr = checkDate.toISOString().split('T')[0]
+      const hubbyAnswer = localStorage.getItem(`answer_hubby_${dateStr}`)
+      const wifeyAnswer = localStorage.getItem(`answer_wifey_${dateStr}`)
+
+      if (hubbyAnswer && wifeyAnswer) {
+        const pastDayOfYear = Math.floor((checkDate.getTime() - new Date(checkDate.getFullYear(), 0, 0).getTime()) / 86400000)
+        const pastDayOfWeek = checkDate.getDay()
+        const pastQuestion = pastDayOfWeek === 0 ? WEEKLY_REFLECTION : QUESTIONS[pastDayOfYear % QUESTIONS.length]
+
+        history.push({
+          date: dateStr,
+          question: pastQuestion,
+          hubbyAnswer,
+          wifeyAnswer
+        })
+      }
+
+      checkDate.setDate(checkDate.getDate() - 1)
+    }
+
+    return history
+  }
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -96,6 +196,26 @@ export default function Home() {
 
   const handleEditAnswer = () => {
     setSubmitted(false)
+  }
+
+  const handleSendLoveNote = () => {
+    if (loveNote.trim() && user) {
+      const partnerUser = user === 'hubby' ? 'wifey' : 'hubby'
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const tomorrowStr = tomorrow.toISOString().split('T')[0]
+
+      localStorage.setItem(`loveNote_${partnerUser}_${tomorrowStr}`, loveNote)
+      setLoveNote('')
+      alert('Love note sent! Your partner will see it tomorrow 💕')
+    }
+  }
+
+  const handleCloseLoveNote = () => {
+    if (user) {
+      localStorage.setItem(`loveNote_${user}_${today}_read`, 'true')
+      setShowLoveNote(false)
+    }
   }
 
   // Check if it's after 9pm
@@ -241,7 +361,8 @@ export default function Home() {
       </div>
 
       <div className="max-w-2xl mx-auto py-8 relative z-10">
-        <div className="flex justify-between items-center mb-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-sm">
               Welcome, {user === 'hubby' ? '🌊 Hubby' : '🏖️ Wifey'}!
@@ -256,13 +377,49 @@ export default function Home() {
           </button>
         </div>
 
+        {/* Streak Counter & Navigation */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border-2 border-cyan-200 hover:border-cyan-300 transition-all transform hover:scale-105"
+          >
+            <div className="text-3xl mb-1">📖</div>
+            <div className="text-xs font-bold text-gray-700">Our Journey</div>
+          </button>
+
+          <div className="bg-gradient-to-br from-amber-400 via-orange-300 to-yellow-300 p-4 rounded-2xl shadow-lg border-2 border-amber-300">
+            <div className="text-3xl mb-1">🔥</div>
+            <div className="text-xs font-bold text-white">{calculateStreak()} Day Streak!</div>
+          </div>
+
+          <button
+            onClick={() => {
+              const note = prompt('Write a love note for your partner to see tomorrow:')
+              if (note) {
+                const partnerUser = user === 'hubby' ? 'wifey' : 'hubby'
+                const tomorrow = new Date()
+                tomorrow.setDate(tomorrow.getDate() + 1)
+                const tomorrowStr = tomorrow.toISOString().split('T')[0]
+                localStorage.setItem(`loveNote_${partnerUser}_${tomorrowStr}`, note)
+                alert('Love note sent! Your partner will see it tomorrow 💕')
+              }
+            }}
+            className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border-2 border-cyan-200 hover:border-cyan-300 transition-all transform hover:scale-105"
+          >
+            <div className="text-3xl mb-1">💌</div>
+            <div className="text-xs font-bold text-gray-700">Send Note</div>
+          </button>
+        </div>
+
         <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6 border-2 border-cyan-200">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-400 text-white text-sm font-bold rounded-full mb-3 shadow-lg">
-                ✨ Question of the Day
+              <span className={`inline-block px-4 py-2 ${isWeeklyReflection ? 'bg-gradient-to-r from-purple-400 via-pink-400 to-rose-400' : 'bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-400'} text-white text-sm font-bold rounded-full mb-3 shadow-lg`}>
+                {isWeeklyReflection ? '🌟 Weekly Reflection' : '✨ Question of the Day'}
               </span>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Today's Question</h2>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                {isWeeklyReflection ? 'Weekly Reflection' : "Today's Question"}
+              </h2>
             </div>
             <span className="text-base text-gray-600 font-medium bg-amber-100 px-3 py-1 rounded-full">{new Date().toLocaleDateString('en-US', {
               weekday: 'short',
@@ -416,6 +573,82 @@ export default function Home() {
                 </button>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* History Modal */}
+      {showHistory && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn overflow-y-auto" onClick={() => setShowHistory(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 my-8 animate-scaleIn max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pb-4 border-b border-gray-200">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-sky-600 to-cyan-600 bg-clip-text text-transparent">📖 Our Journey</h2>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="text-gray-500 hover:text-gray-700 text-3xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {getHistory().length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-7xl mb-4">🌱</div>
+                <p className="text-xl text-gray-600">Your journey is just beginning!</p>
+                <p className="text-gray-500 mt-2">Past conversations will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {getHistory().map((entry, index) => (
+                  <div key={entry.date} className="bg-gradient-to-br from-sky-50 via-cyan-50 to-amber-50 rounded-2xl p-6 border-2 border-cyan-100">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-bold text-lg text-gray-800">{new Date(entry.date + 'T00:00:00').toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</h3>
+                      <span className="text-sm text-gray-600">{getHistory().length - index} days ago</span>
+                    </div>
+                    <p className="text-sky-700 font-semibold mb-4 text-lg">"{entry.question}"</p>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="bg-white/80 rounded-xl p-4 border border-sky-200">
+                        <div className="text-sm font-bold text-sky-600 mb-2">🌊 Hubby's Answer:</div>
+                        <p className="text-gray-700 whitespace-pre-wrap">{entry.hubbyAnswer}</p>
+                      </div>
+                      <div className="bg-white/80 rounded-xl p-4 border border-amber-200">
+                        <div className="text-sm font-bold text-amber-600 mb-2">🏖️ Wifey's Answer:</div>
+                        <p className="text-gray-700 whitespace-pre-wrap">{entry.wifeyAnswer}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Love Note Modal */}
+      {showLoveNote && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn" onClick={handleCloseLoveNote}>
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="text-center mb-6">
+              <div className="text-7xl mb-4">💌</div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                Love Note from {partnerName}
+              </h3>
+            </div>
+            <div className="bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 rounded-2xl p-6 mb-6 border-2 border-pink-200">
+              <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
+                {localStorage.getItem(`loveNote_${user}_${today}`)}
+              </p>
+            </div>
+            <button
+              onClick={handleCloseLoveNote}
+              className="w-full bg-gradient-to-r from-pink-500 via-rose-500 to-red-400 hover:from-pink-600 hover:via-rose-600 hover:to-red-500 text-white font-bold py-3 px-4 rounded-2xl transition shadow-lg"
+            >
+              Close 💕
+            </button>
           </div>
         </div>
       )}
