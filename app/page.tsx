@@ -419,62 +419,6 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Debug Panel (temporary) */}
-        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-4 mb-6">
-          <div className="text-xs font-mono">
-            <div className="font-bold mb-2">Debug Info:</div>
-            <div>Today: {today}</div>
-            <div>User: {user}</div>
-            <div>Answer saved: {localStorage.getItem(`answer_${user}_${today}`) ? 'Yes' : 'No'}</div>
-            <div>Love note for today: {localStorage.getItem(`loveNote_${user}_${today}`) || 'None'}</div>
-            <div>Love note read: {localStorage.getItem(`loveNote_${user}_${today}_read`) || 'No'}</div>
-            <div>History entries: {getHistory().length}</div>
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={() => {
-                  const keys = Object.keys(localStorage).filter(k => k.includes('answer_') || k.includes('loveNote_'))
-                  console.log('All localStorage keys:', keys)
-                  keys.forEach(key => console.log(key, ':', localStorage.getItem(key)))
-                  alert('Check console for all stored data')
-                }}
-                className="text-xs bg-yellow-200 px-2 py-1 rounded hover:bg-yellow-300"
-              >
-                Log All Data
-              </button>
-              <button
-                onClick={() => {
-                  // Copy tomorrow's love note to today to test
-                  const tomorrow = new Date()
-                  tomorrow.setDate(tomorrow.getDate() + 1)
-                  const tomorrowStr = tomorrow.toISOString().split('T')[0]
-                  const tomorrowNote = localStorage.getItem(`loveNote_${user}_${tomorrowStr}`)
-                  if (tomorrowNote) {
-                    localStorage.setItem(`loveNote_${user}_${today}`, tomorrowNote)
-                    localStorage.removeItem(`loveNote_${user}_${today}_read`)
-                    alert('Copied tomorrow\'s love note to today! Refresh the page.')
-                  } else {
-                    alert('No love note for tomorrow to test with.')
-                  }
-                }}
-                className="text-xs bg-green-200 px-2 py-1 rounded hover:bg-green-300"
-              >
-                Test Love Note Now
-              </button>
-              <button
-                onClick={() => {
-                  if (confirm('This will clear ALL data. Are you sure?')) {
-                    localStorage.clear()
-                    window.location.reload()
-                  }
-                }}
-                className="text-xs bg-red-200 px-2 py-1 rounded hover:bg-red-300"
-              >
-                Clear All
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6 border-2 border-cyan-200">
           <div className="flex justify-between items-start mb-6">
             <div>
