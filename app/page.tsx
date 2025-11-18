@@ -90,14 +90,21 @@ export default function Home() {
         setAnswer(savedAnswer)
         setSubmitted(true)
       }
-
-      // Check for love note
-      const note = localStorage.getItem(`loveNote_${savedUser}_${today}`)
-      if (note && !localStorage.getItem(`loveNote_${savedUser}_${today}_read`)) {
-        setShowLoveNote(true)
-      }
     }
   }, [today])
+
+  // Check for love note after user is set
+  useEffect(() => {
+    if (user) {
+      const note = localStorage.getItem(`loveNote_${user}_${today}`)
+      if (note && !localStorage.getItem(`loveNote_${user}_${today}_read`)) {
+        // Show love note after a brief delay
+        setTimeout(() => {
+          setShowLoveNote(true)
+        }, 1000)
+      }
+    }
+  }, [user, today])
 
   // Calculate streak
   const calculateStreak = () => {
@@ -124,16 +131,17 @@ export default function Home() {
 
   // Get history of past Q&A pairs
   const getHistory = () => {
-    const history: Array<{ date: string; question: string; hubbyAnswer: string; wifeyAnswer: string }> = []
+    const history: Array<{ date: string; question: string; hubbyAnswer: string | null; wifeyAnswer: string | null }> = []
     let checkDate = new Date()
-    checkDate.setDate(checkDate.getDate() - 1) // Start from yesterday
 
-    for (let i = 0; i < 30; i++) { // Look back 30 days
+    // Include today if both answered
+    for (let i = 0; i < 31; i++) { // Look back 31 days (including today)
       const dateStr = checkDate.toISOString().split('T')[0]
       const hubbyAnswer = localStorage.getItem(`answer_hubby_${dateStr}`)
       const wifeyAnswer = localStorage.getItem(`answer_wifey_${dateStr}`)
 
-      if (hubbyAnswer && wifeyAnswer) {
+      // Show in history if at least one person answered
+      if (hubbyAnswer || wifeyAnswer) {
         const pastDayOfYear = Math.floor((checkDate.getTime() - new Date(checkDate.getFullYear(), 0, 0).getTime()) / 86400000)
         const pastDayOfWeek = checkDate.getDay()
         const pastQuestion = pastDayOfWeek === 0 ? WEEKLY_REFLECTION : QUESTIONS[pastDayOfYear % QUESTIONS.length]
@@ -411,6 +419,30 @@ export default function Home() {
           </button>
         </div>
 
+        {/* Debug Panel (temporary) */}
+        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-4 mb-6">
+          <div className="text-xs font-mono">
+            <div className="font-bold mb-2">Debug Info:</div>
+            <div>Today: {today}</div>
+            <div>User: {user}</div>
+            <div>Answer saved: {localStorage.getItem(`answer_${user}_${today}`) ? 'Yes' : 'No'}</div>
+            <div>Love note for today: {localStorage.getItem(`loveNote_${user}_${today}`) || 'None'}</div>
+            <div>Love note read: {localStorage.getItem(`loveNote_${user}_${today}_read`) || 'No'}</div>
+            <div>History entries: {getHistory().length}</div>
+            <button
+              onClick={() => {
+                const keys = Object.keys(localStorage).filter(k => k.includes('answer_') || k.includes('loveNote_'))
+                console.log('All localStorage keys:', keys)
+                keys.forEach(key => console.log(key, ':', localStorage.getItem(key)))
+                alert('Check console for all stored data')
+              }}
+              className="mt-2 text-xs bg-yellow-200 px-2 py-1 rounded"
+            >
+              Log All Data
+            </button>
+          </div>
+        </div>
+
         <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6 border-2 border-cyan-200">
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -613,11 +645,11 @@ export default function Home() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="bg-white/80 rounded-xl p-4 border border-sky-200">
                         <div className="text-sm font-bold text-sky-600 mb-2">🌊 Hubby's Answer:</div>
-                        <p className="text-gray-700 whitespace-pre-wrap">{entry.hubbyAnswer}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{entry.hubbyAnswer || <span className="text-gray-400 italic">Not answered yet</span>}</p>
                       </div>
                       <div className="bg-white/80 rounded-xl p-4 border border-amber-200">
                         <div className="text-sm font-bold text-amber-600 mb-2">🏖️ Wifey's Answer:</div>
-                        <p className="text-gray-700 whitespace-pre-wrap">{entry.wifeyAnswer}</p>
+                        <p className="text-gray-700 whitespace-pre-wrap">{entry.wifeyAnswer || <span className="text-gray-400 italic">Not answered yet</span>}</p>
                       </div>
                     </div>
                   </div>
