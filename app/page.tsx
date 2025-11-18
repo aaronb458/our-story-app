@@ -136,60 +136,60 @@ export default function Home() {
   // Login screen
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-100 via-pink-100 to-purple-100 p-4 relative overflow-hidden">
-        {/* Animated floating hearts and orbs */}
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-cyan-50 to-amber-50 p-4 relative overflow-hidden">
+        {/* Animated floating beach elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 left-10 w-40 h-40 bg-rose-300 rounded-full opacity-30 blur-3xl animate-float"></div>
-          <div className="absolute bottom-20 right-20 w-48 h-48 bg-purple-300 rounded-full opacity-30 blur-3xl animate-float-delayed"></div>
-          <div className="absolute top-1/2 left-1/3 w-44 h-44 bg-pink-300 rounded-full opacity-30 blur-3xl animate-float-slow"></div>
-          <div className="absolute top-1/4 right-1/4 w-36 h-36 bg-fuchsia-300 rounded-full opacity-25 blur-3xl animate-float"></div>
+          <div className="absolute top-10 left-10 w-40 h-40 bg-sky-300 rounded-full opacity-30 blur-3xl animate-float"></div>
+          <div className="absolute bottom-20 right-20 w-48 h-48 bg-cyan-300 rounded-full opacity-30 blur-3xl animate-float-delayed"></div>
+          <div className="absolute top-1/2 left-1/3 w-44 h-44 bg-blue-300 rounded-full opacity-30 blur-3xl animate-float-slow"></div>
+          <div className="absolute top-1/4 right-1/4 w-36 h-36 bg-amber-300 rounded-full opacity-25 blur-3xl animate-float"></div>
 
-          {/* Floating hearts */}
-          <div className="absolute top-20 right-1/3 text-rose-300 opacity-20 animate-float text-6xl">💕</div>
-          <div className="absolute bottom-40 left-1/4 text-pink-300 opacity-20 animate-float-delayed text-5xl">💖</div>
-          <div className="absolute top-1/3 right-20 text-purple-300 opacity-15 animate-float-slow text-7xl">💗</div>
+          {/* Floating beach emojis */}
+          <div className="absolute top-20 right-1/3 text-cyan-400 opacity-20 animate-float text-6xl">🌊</div>
+          <div className="absolute bottom-40 left-1/4 text-amber-400 opacity-20 animate-float-delayed text-5xl">🏖️</div>
+          <div className="absolute top-1/3 right-20 text-sky-400 opacity-15 animate-float-slow text-7xl">☀️</div>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full border-2 border-rose-200 relative z-10">
+        <div className="bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-2xl max-w-md w-full border-2 border-cyan-200 relative z-10">
           <div className="text-center mb-8">
-            <div className="inline-block p-4 bg-gradient-to-br from-rose-400 via-pink-500 to-fuchsia-500 rounded-2xl mb-4 shadow-xl animate-pulse-slow">
+            <div className="inline-block p-4 bg-gradient-to-br from-sky-400 via-cyan-500 to-blue-500 rounded-2xl mb-4 shadow-xl animate-pulse-slow">
               <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
               </svg>
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 bg-clip-text text-transparent mb-2 drop-shadow-sm">
+            <h1 className="text-5xl font-bold bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent mb-2 drop-shadow-sm">
               Our Story
             </h1>
-            <p className="text-gray-600 text-base font-medium">Daily questions, deeper connection 💕</p>
+            <p className="text-gray-600 text-base font-medium">Daily questions, deeper connection 🌊</p>
           </div>
 
           {!loginUser ? (
             <div className="space-y-3">
               <button
                 onClick={() => setLoginUser('hubby')}
-                className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 hover:from-blue-600 hover:via-blue-700 hover:to-cyan-600 text-white font-bold py-5 px-6 rounded-2xl transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
+                className="w-full bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-600 hover:to-cyan-500 text-white font-bold py-5 px-6 rounded-2xl transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
               >
-                💙 I'm Hubby
+                🌊 I'm Hubby
               </button>
               <button
                 onClick={() => setLoginUser('wifey')}
-                className="w-full bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600 text-white font-bold py-5 px-6 rounded-2xl transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
+                className="w-full bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-300 hover:from-amber-500 hover:via-orange-400 hover:to-yellow-400 text-white font-bold py-5 px-6 rounded-2xl transition-all shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
               >
-                💕 I'm Wifey
+                🏖️ I'm Wifey
               </button>
             </div>
           ) : (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
-                  Welcome, {loginUser === 'hubby' ? 'Hubby' : 'Wifey'}! 💙
+                  Welcome, {loginUser === 'hubby' ? 'Hubby 🌊' : 'Wifey 🏖️'}!
                 </h2>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-rose-400 focus:ring-2 focus:ring-rose-200 outline-none transition"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-200 outline-none transition"
                   autoFocus
                 />
               </div>
@@ -203,7 +203,7 @@ export default function Home() {
               <div className="space-y-2">
                 <button
                   type="submit"
-                  className={`w-full ${loginUser === 'hubby' ? 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700' : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'} text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg`}
+                  className={`w-full ${loginUser === 'hubby' ? 'bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-600 hover:to-cyan-500' : 'bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-300 hover:from-amber-500 hover:via-orange-400 hover:to-yellow-400'} text-white font-semibold py-3 px-4 rounded-xl transition shadow-lg`}
                 >
                   Login
                 </button>
@@ -228,23 +228,23 @@ export default function Home() {
 
   // Main app
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-100 via-pink-100 to-purple-100 p-4 relative overflow-hidden">
-      {/* Animated floating hearts and orbs */}
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 via-cyan-50 to-amber-50 p-4 relative overflow-hidden">
+      {/* Animated floating beach elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-10 right-10 w-40 h-40 bg-rose-300 rounded-full opacity-20 blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 left-20 w-48 h-48 bg-purple-300 rounded-full opacity-20 blur-3xl animate-float-delayed"></div>
-        <div className="absolute top-1/3 right-1/3 w-44 h-44 bg-pink-300 rounded-full opacity-20 blur-3xl animate-float-slow"></div>
+        <div className="absolute top-10 right-10 w-40 h-40 bg-sky-300 rounded-full opacity-20 blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 left-20 w-48 h-48 bg-cyan-300 rounded-full opacity-20 blur-3xl animate-float-delayed"></div>
+        <div className="absolute top-1/3 right-1/3 w-44 h-44 bg-blue-300 rounded-full opacity-20 blur-3xl animate-float-slow"></div>
 
-        {/* Floating hearts */}
-        <div className="absolute top-32 right-1/4 text-rose-300 opacity-15 animate-float text-5xl">💕</div>
-        <div className="absolute bottom-1/3 left-20 text-pink-300 opacity-15 animate-float-delayed text-4xl">💖</div>
+        {/* Floating beach emojis */}
+        <div className="absolute top-32 right-1/4 text-cyan-400 opacity-15 animate-float text-5xl">🌊</div>
+        <div className="absolute bottom-1/3 left-20 text-amber-400 opacity-15 animate-float-delayed text-4xl">☀️</div>
       </div>
 
       <div className="max-w-2xl mx-auto py-8 relative z-10">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-sm">
-              Welcome, {user === 'hubby' ? '💙 Hubby' : '💕 Wifey'}!
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-sky-600 via-cyan-600 to-blue-600 bg-clip-text text-transparent drop-shadow-sm">
+              Welcome, {user === 'hubby' ? '🌊 Hubby' : '🏖️ Wifey'}!
             </h1>
             <p className="text-gray-700 text-base mt-2 font-medium">Let's grow closer together ✨</p>
           </div>
@@ -256,15 +256,15 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6 border-2 border-rose-200">
+        <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6 border-2 border-cyan-200">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <span className="inline-block px-4 py-2 bg-gradient-to-r from-rose-400 via-pink-400 to-fuchsia-400 text-white text-sm font-bold rounded-full mb-3 shadow-lg">
+              <span className="inline-block px-4 py-2 bg-gradient-to-r from-sky-400 via-cyan-400 to-blue-400 text-white text-sm font-bold rounded-full mb-3 shadow-lg">
                 ✨ Question of the Day
               </span>
               <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Today's Question</h2>
             </div>
-            <span className="text-base text-gray-600 font-medium bg-gray-100 px-3 py-1 rounded-full">{new Date().toLocaleDateString('en-US', {
+            <span className="text-base text-gray-600 font-medium bg-amber-100 px-3 py-1 rounded-full">{new Date().toLocaleDateString('en-US', {
               weekday: 'short',
               month: 'short',
               day: 'numeric'
@@ -274,13 +274,13 @@ export default function Home() {
         </div>
 
         {!submitted ? (
-          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border-2 border-rose-200">
+          <div className="bg-white/90 backdrop-blur-md rounded-3xl shadow-2xl p-8 border-2 border-cyan-200">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent mb-5">Your Answer</h3>
             <textarea
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="Take your time... share what's on your heart ✨💭"
-              className="w-full px-5 py-4 rounded-2xl border-2 border-rose-200 focus:border-pink-400 focus:ring-4 focus:ring-pink-100 outline-none transition-all resize-none text-lg"
+              className="w-full px-5 py-4 rounded-2xl border-2 border-cyan-200 focus:border-sky-400 focus:ring-4 focus:ring-sky-100 outline-none transition-all resize-none text-lg"
               rows={6}
               maxLength={2000}
             />
@@ -292,7 +292,7 @@ export default function Home() {
             <button
               onClick={handleSubmitAnswer}
               disabled={!answer.trim()}
-              className={`w-full ${user === 'hubby' ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 hover:from-blue-600 hover:via-blue-700 hover:to-cyan-600' : 'bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600'} text-white font-bold py-5 px-6 rounded-2xl transition-all shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 text-lg`}
+              className={`w-full ${user === 'hubby' ? 'bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-600 hover:to-cyan-500' : 'bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-300 hover:from-amber-500 hover:via-orange-400 hover:to-yellow-400'} text-white font-bold py-5 px-6 rounded-2xl transition-all shadow-xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 text-lg`}
             >
               ✓ Submit Answer
             </button>
@@ -317,7 +317,7 @@ export default function Home() {
                 </button>
               </div>
               <p className="text-gray-700 mb-5 text-base font-medium">Your partner will see your answer at 9pm tonight 🌙✨</p>
-              <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 rounded-2xl p-6 border-2 border-rose-100 shadow-inner">
+              <div className="bg-gradient-to-br from-sky-50 via-cyan-50 to-amber-50 rounded-2xl p-6 border-2 border-cyan-100 shadow-inner">
                 <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-lg">{answer}</p>
               </div>
             </div>
@@ -325,7 +325,7 @@ export default function Home() {
             {/* Partner Answer Button */}
             <button
               onClick={() => setShowPartnerModal(true)}
-              className={`w-full ${user === 'hubby' ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 hover:from-pink-600 hover:via-rose-600 hover:to-fuchsia-600' : 'bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-500 hover:from-blue-600 hover:via-blue-700 hover:to-cyan-600'} text-white font-bold py-6 px-6 rounded-2xl shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-xl`}
+              className={`w-full ${user === 'hubby' ? 'bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-300 hover:from-amber-500 hover:via-orange-400 hover:to-yellow-400' : 'bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-600 hover:to-cyan-500'} text-white font-bold py-6 px-6 rounded-2xl shadow-2xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-xl`}
             >
               {canView9pm && partnerAnswer ? (
                 <>💕 View {partnerName}'s Answer</>
@@ -348,8 +348,8 @@ export default function Home() {
               partnerAnswer ? (
                 <>
                   <div className="text-center mb-6">
-                    <div className="inline-block p-4 bg-gradient-to-br from-pink-100 to-rose-100 rounded-2xl mb-4">
-                      <svg className="w-8 h-8 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="inline-block p-4 bg-gradient-to-br from-sky-100 to-cyan-100 rounded-2xl mb-4">
+                      <svg className="w-8 h-8 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                       </svg>
                     </div>
@@ -357,14 +357,14 @@ export default function Home() {
                       {partnerName}'s Answer
                     </h3>
                   </div>
-                  <div className="bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 rounded-2xl p-6 mb-6 border border-rose-100">
+                  <div className="bg-gradient-to-br from-sky-50 via-cyan-50 to-amber-50 rounded-2xl p-6 mb-6 border border-cyan-100">
                     <p className="text-gray-700 whitespace-pre-wrap text-lg leading-relaxed">
                       {partnerAnswer}
                     </p>
                   </div>
                   <button
                     onClick={() => setShowPartnerModal(false)}
-                    className={`w-full ${user === 'hubby' ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'} text-white font-semibold py-3 px-4 rounded-2xl transition shadow-lg`}
+                    className={`w-full ${user === 'hubby' ? 'bg-gradient-to-r from-amber-400 via-orange-300 to-yellow-300 hover:from-amber-500 hover:via-orange-400 hover:to-yellow-400' : 'bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-400 hover:from-blue-600 hover:via-sky-600 hover:to-cyan-500'} text-white font-semibold py-3 px-4 rounded-2xl transition shadow-lg`}
                   >
                     Close
                   </button>
@@ -397,9 +397,9 @@ export default function Home() {
                     Locked Until 9pm
                   </h3>
                   {timeUntil && (
-                    <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-6 mb-4 border border-orange-100">
+                    <div className="bg-gradient-to-br from-sky-50 to-cyan-50 rounded-2xl p-6 mb-4 border border-cyan-100">
                       <p className="text-gray-700 text-lg mb-2 font-medium">Time until unlock:</p>
-                      <p className="text-5xl font-bold bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
+                      <p className="text-5xl font-bold bg-gradient-to-r from-sky-500 to-cyan-500 bg-clip-text text-transparent">
                         {timeUntil.hours}h {timeUntil.minutes}m
                       </p>
                     </div>
