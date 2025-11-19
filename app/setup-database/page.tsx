@@ -123,7 +123,7 @@ export default function SetupDatabase() {
               </summary>
               <pre className="mt-4 p-4 bg-gray-800 text-green-400 rounded-lg overflow-x-auto text-xs">
 {`-- Create submissions table
-CREATE TABLE IF NOT EXISTS submissions (
+CREATE TABLE IF NOT EXISTS public.submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "user" TEXT NOT NULL CHECK ("user" IN ('hubby', 'wifey')),
   date DATE NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS submissions (
 );
 
 -- Create love_notes table
-CREATE TABLE IF NOT EXISTS love_notes (
+CREATE TABLE IF NOT EXISTS public.love_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   from_user TEXT NOT NULL CHECK (from_user IN ('hubby', 'wifey')),
   to_user TEXT NOT NULL CHECK (to_user IN ('hubby', 'wifey')),

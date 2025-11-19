@@ -1,12 +1,12 @@
 -- Create submissions table
 CREATE TABLE IF NOT EXISTS submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user TEXT NOT NULL CHECK (user IN ('hubby', 'wifey')),
+  "user" TEXT NOT NULL CHECK ("user" IN ('hubby', 'wifey')),
   date DATE NOT NULL,
   question TEXT NOT NULL,
   answer TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(user, date)
+  UNIQUE("user", date)
 );
 
 -- Create love_notes table
@@ -52,5 +52,5 @@ CREATE POLICY "Enable update for all users" ON love_notes
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_submissions_date ON submissions(date);
-CREATE INDEX IF NOT EXISTS idx_submissions_user ON submissions(user);
+CREATE INDEX IF NOT EXISTS idx_submissions_user ON submissions("user");
 CREATE INDEX IF NOT EXISTS idx_love_notes_to_user_date ON love_notes(to_user, date);
