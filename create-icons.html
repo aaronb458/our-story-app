@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Generate Icons</title>
+</head>
+<body>
+  <canvas id="canvas" width="512" height="512"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 512, 512);
+    gradient.addColorStop(0, '#0EA5E9');
+    gradient.addColorStop(0.5, '#06B6D4');
+    gradient.addColorStop(1, '#3B82F6');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 512, 512);
+
+    // Draw heart
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    const centerX = 256;
+    const centerY = 220;
+    const size = 120;
+
+    ctx.moveTo(centerX, centerY + size / 4);
+    ctx.bezierCurveTo(
+      centerX, centerY,
+      centerX - size / 2, centerY - size / 2,
+      centerX - size, centerY - size / 4
+    );
+    ctx.bezierCurveTo(
+      centerX - size, centerY - size,
+      centerX - size / 2, centerY - size,
+      centerX, centerY + size / 8
+    );
+    ctx.bezierCurveTo(
+      centerX + size / 2, centerY - size,
+      centerX + size, centerY - size,
+      centerX + size, centerY - size / 4
+    );
+    ctx.bezierCurveTo(
+      centerX + size / 2, centerY - size / 2,
+      centerX, centerY,
+      centerX, centerY + size / 4
+    );
+    ctx.fill();
+
+    // Download 512x512
+    canvas.toBlob(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'icon-512.png';
+      a.click();
+    });
+
+    // Create 192x192
+    setTimeout(() => {
+      const canvas192 = document.createElement('canvas');
+      canvas192.width = 192;
+      canvas192.height = 192;
+      const ctx192 = canvas192.getContext('2d');
+      ctx192.drawImage(canvas, 0, 0, 192, 192);
+
+      canvas192.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'icon-192.png';
+        a.click();
+      });
+    }, 500);
+
+    // Create 180x180 (Apple)
+    setTimeout(() => {
+      const canvas180 = document.createElement('canvas');
+      canvas180.width = 180;
+      canvas180.height = 180;
+      const ctx180 = canvas180.getContext('2d');
+      ctx180.drawImage(canvas, 0, 0, 180, 180);
+
+      canvas180.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'apple-touch-icon.png';
+        a.click();
+      });
+    }, 1000);
+
+    // Create 32x32
+    setTimeout(() => {
+      const canvas32 = document.createElement('canvas');
+      canvas32.width = 32;
+      canvas32.height = 32;
+      const ctx32 = canvas32.getContext('2d');
+      ctx32.drawImage(canvas, 0, 0, 32, 32);
+
+      canvas32.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'favicon-32x32.png';
+        a.click();
+      });
+    }, 1500);
+
+    // Create 16x16
+    setTimeout(() => {
+      const canvas16 = document.createElement('canvas');
+      canvas16.width = 16;
+      canvas16.height = 16;
+      const ctx16 = canvas16.getContext('2d');
+      ctx16.drawImage(canvas, 0, 0, 16, 16);
+
+      canvas16.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'favicon-16x16.png';
+        a.click();
+      });
+    }, 2000);
+
+    document.body.innerHTML += '<p style="margin-top: 20px; font-family: sans-serif;">Icons generated! Check your downloads folder.</p>';
+  </script>
+</body>
+</html>
