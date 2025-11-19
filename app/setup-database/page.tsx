@@ -148,24 +148,30 @@ CREATE TABLE IF NOT EXISTS love_notes (
 ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE love_notes ENABLE ROW LEVEL SECURITY;
 
--- Create policies for submissions
-CREATE POLICY IF NOT EXISTS "Enable read access for all users" ON submissions
+-- Create policies for submissions (drop if exists first)
+DROP POLICY IF EXISTS "Enable read access for all users" ON submissions;
+CREATE POLICY "Enable read access for all users" ON submissions
   FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Enable insert for all users" ON submissions
+DROP POLICY IF EXISTS "Enable insert for all users" ON submissions;
+CREATE POLICY "Enable insert for all users" ON submissions
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Enable update for all users" ON submissions
+DROP POLICY IF EXISTS "Enable update for all users" ON submissions;
+CREATE POLICY "Enable update for all users" ON submissions
   FOR UPDATE USING (true);
 
--- Create policies for love_notes
-CREATE POLICY IF NOT EXISTS "Enable read access for all users" ON love_notes
+-- Create policies for love_notes (drop if exists first)
+DROP POLICY IF EXISTS "Enable read access for all users" ON love_notes;
+CREATE POLICY "Enable read access for all users" ON love_notes
   FOR SELECT USING (true);
 
-CREATE POLICY IF NOT EXISTS "Enable insert for all users" ON love_notes
+DROP POLICY IF EXISTS "Enable insert for all users" ON love_notes;
+CREATE POLICY "Enable insert for all users" ON love_notes
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY IF NOT EXISTS "Enable update for all users" ON love_notes
+DROP POLICY IF EXISTS "Enable update for all users" ON love_notes;
+CREATE POLICY "Enable update for all users" ON love_notes
   FOR UPDATE USING (true);
 
 -- Create indexes

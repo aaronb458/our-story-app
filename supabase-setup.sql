@@ -25,22 +25,28 @@ ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE love_notes ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for submissions (allow all for now - you can restrict later)
+DROP POLICY IF EXISTS "Enable read access for all users" ON submissions;
 CREATE POLICY "Enable read access for all users" ON submissions
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable insert for all users" ON submissions;
 CREATE POLICY "Enable insert for all users" ON submissions
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Enable update for all users" ON submissions;
 CREATE POLICY "Enable update for all users" ON submissions
   FOR UPDATE USING (true);
 
 -- Create policies for love_notes
+DROP POLICY IF EXISTS "Enable read access for all users" ON love_notes;
 CREATE POLICY "Enable read access for all users" ON love_notes
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Enable insert for all users" ON love_notes;
 CREATE POLICY "Enable insert for all users" ON love_notes
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Enable update for all users" ON love_notes;
 CREATE POLICY "Enable update for all users" ON love_notes
   FOR UPDATE USING (true);
 
