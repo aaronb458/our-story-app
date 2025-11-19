@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migrate LocalStorage to Supabase</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      margin: 10px 0;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.02);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .log {
+      background: #f5f5f5;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #667eea;
+      padding-left: 10px;
+    }
+    .success {
+      color: #27ae60;
+      border-left-color: #27ae60;
+    }
+    .error {
+      color: #e74c3c;
+      border-left-color: #e74c3c;
+    }
+    .info {
+      color: #3498db;
+      border-left-color: #3498db;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .stat-label {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Migrate LocalStorage Data</h1>
+    <p class="subtitle">Transfer your existing answers and love notes to the database</p>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Submissions Found</div>
+        <div class="stat-number" id="submissionsCount">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Love Notes Found</div>
+        <div class="stat-number" id="loveNotesCount">0</div>
+      </div>
+    </div>
+
+    <button onclick="scanLocalStorage()">📊 Scan LocalStorage</button>
+    <button id="migrateBtn" onclick="migrateData()" disabled>🔄 Migrate to Database</button>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://brxddezkfrstmgthqwdp.supabase.co'
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyeGRkZXprZnJzdG1ndGhxd2RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM0MDk4MjAsImV4cCI6MjA3ODk4NTgyMH0.xbW33jaoEhkFLb71FUU-lfNYp0mxhDZzo4kAdCAV590'
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    const QUESTIONS = [
+      "What's something I do that makes you feel truly loved?",
+      "If you could relive one memory with me, which would it be?",
+      "What's a way I could support you better when you're overwhelmed?",
+      "What's your favorite thing about our relationship?",
+      "What's a small thing I do that makes your day better?",
+      "What's one of your favorite memories of us laughing together?",
+      "What do you think our life will look like in 5 years?",
+      "What's something new you'd like us to try together?",
+      "What song reminds you of us and why?",
+      "What's your favorite way I show you I care?",
+      "What's something you're grateful for about us today?",
+      "If we could go anywhere together right now, where would it be?",
+      "What's one thing you love about how we communicate?",
+      "What's a challenge we've overcome together that you're proud of?",
+      "What's your favorite tradition we've created together?",
+      "What makes you feel most connected to me?",
+      "What's something about me that always makes you smile?",
+      "What's a dream you have for our future?",
+      "What's one way our relationship has helped you grow?",
+      "What's your favorite way we spend quality time together?",
+      "What's something I've done recently that meant a lot to you?",
+      "What do you think is our biggest strength as a couple?",
+      "What's a goal you'd like us to work on together?",
+      "What's your favorite inside joke we share?",
+      "What do you appreciate most about how I support your dreams?",
+      "What's a moment when you felt especially close to me?",
+      "What's something you'd like to learn or experience with me?",
+      "What quality of mine do you admire most?",
+      "What's your favorite thing about coming home to me?",
+      "What makes you feel most appreciated in our relationship?",
+      "What's a lesson our relationship has taught you?",
+      "What's something simple that always reminds you of me?",
+      "What's your favorite way we've celebrated something together?",
+      "What's one thing you never want to change about us?",
+      "What makes our relationship special to you?",
+    ]
+
+    const WEEKLY_REFLECTION = "What made you smile this week when you thought of us?"
+
+    let foundSubmissions = []
+    let foundLoveNotes = []
+
+    function log(message, type = 'info') {
+      const logDiv = document.getElementById('log')
+      const entry = document.createElement('div')
+      entry.className = `log-entry ${type}`
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`
+      logDiv.appendChild(entry)
+      logDiv.scrollTop = logDiv.scrollHeight
+    }
+
+    function getQuestionForDate(dateStr) {
+      const date = new Date(dateStr + 'T00:00:00')
+      const dayOfWeek = date.getDay()
+      const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000)
+
+      if (dayOfWeek === 0) {
+        return WEEKLY_REFLECTION
+      }
+      return QUESTIONS[dayOfYear % QUESTIONS.length]
+    }
+
+    function scanLocalStorage() {
+      log('Starting localStorage scan...', 'info')
+      foundSubmissions = []
+      foundLoveNotes = []
+
+      // Scan for submissions
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+
+        // Check for answer submissions
+        if (key && key.startsWith('answer_')) {
+          const parts = key.split('_')
+          if (parts.length === 3) {
+            const user = parts[1]
+            const date = parts[2]
+            const answer = localStorage.getItem(key)
+
+            if (answer && (user === 'hubby' || user === 'wifey')) {
+              const question = getQuestionForDate(date)
+              foundSubmissions.push({ user, date, answer, question })
+              log(`Found answer from ${user} on ${date}`, 'success')
+            }
+          }
+        }
+
+        // Check for love notes
+        if (key && key.startsWith('loveNote_') && !key.endsWith('_read')) {
+          const parts = key.split('_')
+          if (parts.length === 3) {
+            const toUser = parts[1]
+            const date = parts[2]
+            const note = localStorage.getItem(key)
+
+            if (note && (toUser === 'hubby' || toUser === 'wifey')) {
+              const fromUser = toUser === 'hubby' ? 'wifey' : 'hubby'
+              const isRead = localStorage.getItem(`${key}_read`) === 'true'
+              foundLoveNotes.push({ fromUser, toUser, date, note, read: isRead })
+              log(`Found love note for ${toUser} on ${date}`, 'success')
+            }
+          }
+        }
+      }
+
+      document.getElementById('submissionsCount').textContent = foundSubmissions.length
+      document.getElementById('loveNotesCount').textContent = foundLoveNotes.length
+      document.getElementById('migrateBtn').disabled = foundSubmissions.length === 0 && foundLoveNotes.length === 0
+
+      log(`\nScan complete! Found ${foundSubmissions.length} submissions and ${foundLoveNotes.length} love notes.`, 'success')
+
+      if (foundSubmissions.length > 0 || foundLoveNotes.length > 0) {
+        log('Click "Migrate to Database" to transfer your data.', 'info')
+      } else {
+        log('No data found in localStorage. You might have already migrated or are starting fresh!', 'info')
+      }
+    }
+
+    async function migrateData() {
+      log('\nStarting migration...', 'info')
+      document.getElementById('migrateBtn').disabled = true
+
+      let successCount = 0
+      let errorCount = 0
+
+      // Migrate submissions
+      for (const submission of foundSubmissions) {
+        try {
+          const { error } = await supabase
+            .from('submissions')
+            .upsert({
+              user: submission.user,
+              date: submission.date,
+              question: submission.question,
+              answer: submission.answer
+            }, {
+              onConflict: 'user,date'
+            })
+
+          if (error) throw error
+
+          log(`✓ Migrated ${submission.user}'s answer from ${submission.date}`, 'success')
+          successCount++
+        } catch (error) {
+          log(`✗ Failed to migrate ${submission.user}'s answer from ${submission.date}: ${error.message}`, 'error')
+          errorCount++
+        }
+      }
+
+      // Migrate love notes
+      for (const note of foundLoveNotes) {
+        try {
+          const { error } = await supabase
+            .from('love_notes')
+            .insert({
+              from_user: note.fromUser,
+              to_user: note.toUser,
+              date: note.date,
+              note: note.note,
+              read: note.read
+            })
+
+          if (error && !error.message.includes('duplicate')) throw error
+
+          log(`✓ Migrated love note from ${note.fromUser} to ${note.toUser} for ${note.date}`, 'success')
+          successCount++
+        } catch (error) {
+          log(`✗ Failed to migrate love note: ${error.message}`, 'error')
+          errorCount++
+        }
+      }
+
+      log(`\n🎉 Migration complete! ${successCount} items successfully migrated, ${errorCount} errors.`, successCount > 0 ? 'success' : 'error')
+
+      if (successCount > 0) {
+        log('\n✨ Your data is now in the database! You can refresh the app to see it.', 'success')
+        log('💡 TIP: You can now clear your localStorage if you want (it\'s backed up in the database).', 'info')
+      }
+    }
+
+    // Auto-scan on load
+    window.addEventListener('load', () => {
+      log('👋 Welcome! This tool will help you migrate your localStorage data to the database.', 'info')
+      log('Click "Scan LocalStorage" to begin.\n', 'info')
+    })
+  </script>
+</body>
+</html>

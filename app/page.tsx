@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import type { Submission, LoveNote } from '../lib/supabase'
 
 const QUESTIONS = [
   "What's something I do that makes you feel truly loved?",
@@ -58,8 +60,11 @@ export default function Home() {
   const [showPartnerModal, setShowPartnerModal] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [showLoveNote, setShowLoveNote] = useState(false)
+  const [currentLoveNote, setCurrentLoveNote] = useState<LoveNote | null>(null)
   const [loveNote, setLoveNote] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [partnerAnswer, setPartnerAnswer] = useState<string | null>(null)
+  const [history, setHistory] = useState<Array<{ date: string; question: string; hubbyAnswer: string | null; wifeyAnswer: string | null }>>([])
 
   // Get question of the day (cycles through questions)
   const today = new Date().toISOString().split('T')[0]
@@ -80,84 +85,117 @@ export default function Home() {
     return () => clearInterval(timer)
   }, [])
 
-  // Load saved answer and user on mount
+  // Load user from localStorage on mount
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser') as 'hubby' | 'wifey' | null
     if (savedUser) {
       setUser(savedUser)
-      const savedAnswer = localStorage.getItem(`answer_${savedUser}_${today}`)
-      if (savedAnswer) {
-        setAnswer(savedAnswer)
-        setSubmitted(true)
-      }
     }
-  }, [today])
+  }, [])
 
-  // Check for love note after user is set
+  // Load today's submission when user is set
   useEffect(() => {
     if (user) {
-      const note = localStorage.getItem(`loveNote_${user}_${today}`)
-      if (note && !localStorage.getItem(`loveNote_${user}_${today}_read`)) {
-        // Show love note after a brief delay
-        setTimeout(() => {
-          setShowLoveNote(true)
-        }, 1000)
-      }
+      loadTodaySubmission()
+      loadPartnerSubmission()
+      checkForLoveNote()
     }
   }, [user, today])
 
-  // Calculate streak
-  const calculateStreak = () => {
-    if (!user) return 0
-    let streak = 0
-    let checkDate = new Date()
-
-    while (streak < 365) { // Max 1 year check
-      const dateStr = checkDate.toISOString().split('T')[0]
-      const hubbyAnswer = localStorage.getItem(`answer_hubby_${dateStr}`)
-      const wifeyAnswer = localStorage.getItem(`answer_wifey_${dateStr}`)
-
-      // Both must have answered for the day to count
-      if (hubbyAnswer && wifeyAnswer) {
-        streak++
-        checkDate.setDate(checkDate.getDate() - 1)
-      } else {
-        break
-      }
+  // Load history when modal opens
+  useEffect(() => {
+    if (showHistory && user) {
+      loadHistory()
     }
+  }, [showHistory, user])
 
-    return streak
+  const loadTodaySubmission = async () => {
+    if (!user) return
+
+    const { data, error } = await supabase
+      .from('submissions')
+      .select('*')
+      .eq('user', user)
+      .eq('date', today)
+      .single()
+
+    if (data) {
+      setAnswer(data.answer)
+      setSubmitted(true)
+    } else {
+      setAnswer('')
+      setSubmitted(false)
+    }
   }
 
-  // Get history of past Q&A pairs
-  const getHistory = () => {
-    const history: Array<{ date: string; question: string; hubbyAnswer: string | null; wifeyAnswer: string | null }> = []
-    let checkDate = new Date()
+  const loadPartnerSubmission = async () => {
+    if (!user) return
 
-    // Include today if both answered
-    for (let i = 0; i < 31; i++) { // Look back 31 days (including today)
-      const dateStr = checkDate.toISOString().split('T')[0]
-      const hubbyAnswer = localStorage.getItem(`answer_hubby_${dateStr}`)
-      const wifeyAnswer = localStorage.getItem(`answer_wifey_${dateStr}`)
+    const partnerUser = user === 'hubby' ? 'wifey' : 'hubby'
+    const { data } = await supabase
+      .from('submissions')
+      .select('*')
+      .eq('user', partnerUser)
+      .eq('date', today)
+      .single()
 
-      // Show in history if at least one person answered
-      if (hubbyAnswer || wifeyAnswer) {
-        const pastDayOfYear = Math.floor((checkDate.getTime() - new Date(checkDate.getFullYear(), 0, 0).getTime()) / 86400000)
-        const pastDayOfWeek = checkDate.getDay()
-        const pastQuestion = pastDayOfWeek === 0 ? WEEKLY_REFLECTION : QUESTIONS[pastDayOfYear % QUESTIONS.length]
+    setPartnerAnswer(data?.answer || null)
+  }
 
-        history.push({
-          date: dateStr,
-          question: pastQuestion,
-          hubbyAnswer,
-          wifeyAnswer
-        })
-      }
+  const checkForLoveNote = async () => {
+    if (!user) return
 
-      checkDate.setDate(checkDate.getDate() - 1)
+    const { data } = await supabase
+      .from('love_notes')
+      .select('*')
+      .eq('to_user', user)
+      .eq('date', today)
+      .eq('read', false)
+      .single()
+
+    if (data) {
+      setCurrentLoveNote(data)
+      setTimeout(() => {
+        setShowLoveNote(true)
+      }, 1000)
     }
+  }
 
-    return history
+  const loadHistory = async () => {
+    const { data: submissions } = await supabase
+      .from('submissions')
+      .select('*')
+      .order('date', { ascending: false })
+      .limit(62) // Get last 31 days * 2 users
+
+    if (!submissions) return
+
+    // Group by date
+    const grouped = submissions.reduce((acc, sub) => {
+      if (!acc[sub.date]) {
+        acc[sub.date] = { date: sub.date, hubbyAnswer: null, wifeyAnswer: null, question: sub.question }
+      }
+      if (sub.user === 'hubby') {
+        acc[sub.date].hubbyAnswer = sub.answer
+      } else {
+        acc[sub.date].wifeyAnswer = sub.answer
+      }
+      return acc
+    }, {} as Record<string, any>)
+
+    const historyArray = Object.values(grouped)
+      .filter((entry: any) => entry.hubbyAnswer || entry.wifeyAnswer)
+      .sort((a: any, b: any) => b.date.localeCompare(a.date))
+      .slice(0, 31)
+
+    setHistory(historyArray as any)
+  }
+
+  // Calculate streak
+  const calculateStreak = () => {
+    // We'll load this from the database
+    // For now, return 0 until we implement streak calculation
+    return 0
   }
 
   const handleLogin = (e: React.FormEvent) => {
@@ -169,16 +207,6 @@ export default function Home() {
       setUser(loginUser)
       setLoginError('')
       setPassword('')
-
-      // Load this user's answer if they have one
-      const savedAnswer = localStorage.getItem(`answer_${loginUser}_${today}`)
-      if (savedAnswer) {
-        setAnswer(savedAnswer)
-        setSubmitted(true)
-      } else {
-        setAnswer('')
-        setSubmitted(false)
-      }
     } else {
       setLoginError('Incorrect password')
       setPassword('')
@@ -195,10 +223,25 @@ export default function Home() {
     setLoginError('')
   }
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (answer.trim() && user) {
-      localStorage.setItem(`answer_${user}_${today}`, answer)
-      setSubmitted(true)
+      const { error } = await supabase
+        .from('submissions')
+        .upsert({
+          user,
+          date: today,
+          question,
+          answer: answer.trim()
+        }, {
+          onConflict: 'user,date'
+        })
+
+      if (!error) {
+        setSubmitted(true)
+      } else {
+        console.error('Error submitting answer:', error)
+        alert('Failed to submit answer. Please try again.')
+      }
     }
   }
 
@@ -206,23 +249,42 @@ export default function Home() {
     setSubmitted(false)
   }
 
-  const handleSendLoveNote = () => {
+  const handleSendLoveNote = async () => {
     if (loveNote.trim() && user) {
       const partnerUser = user === 'hubby' ? 'wifey' : 'hubby'
       const tomorrow = new Date()
       tomorrow.setDate(tomorrow.getDate() + 1)
       const tomorrowStr = tomorrow.toISOString().split('T')[0]
 
-      localStorage.setItem(`loveNote_${partnerUser}_${tomorrowStr}`, loveNote)
-      setLoveNote('')
-      alert('Love note sent! Your partner will see it tomorrow 💕')
+      const { error } = await supabase
+        .from('love_notes')
+        .insert({
+          from_user: user,
+          to_user: partnerUser,
+          date: tomorrowStr,
+          note: loveNote.trim(),
+          read: false
+        })
+
+      if (!error) {
+        setLoveNote('')
+        alert('Love note sent! Your partner will see it tomorrow 💕')
+      } else {
+        console.error('Error sending love note:', error)
+        alert('Failed to send love note. Please try again.')
+      }
     }
   }
 
-  const handleCloseLoveNote = () => {
-    if (user) {
-      localStorage.setItem(`loveNote_${user}_${today}_read`, 'true')
+  const handleCloseLoveNote = async () => {
+    if (currentLoveNote) {
+      await supabase
+        .from('love_notes')
+        .update({ read: true })
+        .eq('id', currentLoveNote.id)
+
       setShowLoveNote(false)
+      setCurrentLoveNote(null)
     }
   }
 
@@ -249,15 +311,7 @@ export default function Home() {
     return { hours, minutes }
   }
 
-  // Get partner's answer
-  const getPartnerAnswer = () => {
-    if (!user) return null
-    const partnerUser = user === 'hubby' ? 'wifey' : 'hubby'
-    return localStorage.getItem(`answer_${partnerUser}_${today}`)
-  }
-
   const partnerName = user === 'hubby' ? 'Wifey' : 'Hubby'
-  const partnerAnswer = getPartnerAnswer()
   const canView9pm = isAfter9pm()
   const timeUntil = getTimeUntil9pm()
 
@@ -404,12 +458,7 @@ export default function Home() {
             onClick={() => {
               const note = prompt('Write a love note for your partner to see tomorrow:')
               if (note) {
-                const partnerUser = user === 'hubby' ? 'wifey' : 'hubby'
-                const tomorrow = new Date()
-                tomorrow.setDate(tomorrow.getDate() + 1)
-                const tomorrowStr = tomorrow.toISOString().split('T')[0]
-                localStorage.setItem(`loveNote_${partnerUser}_${tomorrowStr}`, note)
-                alert('Love note sent! Your partner will see it tomorrow 💕')
+                handleSendLoveNote()
               }
             }}
             className="bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg border-2 border-cyan-200 hover:border-cyan-300 transition-all transform hover:scale-105"
@@ -599,7 +648,7 @@ export default function Home() {
               </button>
             </div>
 
-            {getHistory().length === 0 ? (
+            {history.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-7xl mb-4">🌱</div>
                 <p className="text-xl text-gray-600">Your journey is just beginning!</p>
@@ -607,7 +656,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="space-y-6">
-                {getHistory().map((entry, index) => (
+                {history.map((entry, index) => (
                   <div key={entry.date} className="bg-gradient-to-br from-sky-50 via-cyan-50 to-amber-50 rounded-2xl p-6 border-2 border-cyan-100">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="font-bold text-lg text-gray-800">{new Date(entry.date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -615,7 +664,7 @@ export default function Home() {
                         month: 'long',
                         day: 'numeric'
                       })}</h3>
-                      <span className="text-sm text-gray-600">{getHistory().length - index} days ago</span>
+                      <span className="text-sm text-gray-600">{history.length - index} days ago</span>
                     </div>
                     <p className="text-sky-700 font-semibold mb-4 text-lg">"{entry.question}"</p>
                     <div className="grid md:grid-cols-2 gap-4">
@@ -637,7 +686,7 @@ export default function Home() {
       )}
 
       {/* Love Note Modal */}
-      {showLoveNote && (
+      {showLoveNote && currentLoveNote && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn" onClick={handleCloseLoveNote}>
           <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scaleIn" onClick={(e) => e.stopPropagation()}>
             <div className="text-center mb-6">
@@ -648,7 +697,7 @@ export default function Home() {
             </div>
             <div className="bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 rounded-2xl p-6 mb-6 border-2 border-pink-200">
               <p className="text-gray-800 text-lg leading-relaxed whitespace-pre-wrap">
-                {localStorage.getItem(`loveNote_${user}_${today}`)}
+                {currentLoveNote.note}
               </p>
             </div>
             <button
